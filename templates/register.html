@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - 宠物智能识别系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0B1437 0%, #1a1f4e 50%, #0d2137 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #E0E7FF;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(0, 229, 255, 0.15) 0%, transparent 70%);
+            top: -200px;
+            right: -200px;
+            border-radius: 50%;
+        }
+        
+        .register-container {
+            background: rgba(19, 27, 62, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            width: 420px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 229, 255, 0.15);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .logo-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo-icon {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 15px;
+            background: linear-gradient(135deg, #00E5FF 0%, #8A2BE2 100%);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            box-shadow: 0 0 30px rgba(0, 229, 255, 0.3);
+        }
+        
+        .title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #FFFFFF;
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            font-size: 13px;
+            color: #8892B0;
+        }
+        
+        .form-group {
+            margin-bottom: 18px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 13px;
+            color: #8892B0;
+            margin-bottom: 8px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            border-radius: 10px;
+            color: #FFFFFF;
+            font-size: 14px;
+            transition: all 0.3s;
+            outline: none;
+        }
+        
+        .form-input:focus {
+            border-color: #00E5FF;
+            box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.15);
+        }
+        
+        .form-input::placeholder {
+            color: #5a6a8a;
+        }
+        
+        .form-hint {
+            font-size: 12px;
+            color: #5a6a8a;
+            margin-top: 5px;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #00E5FF 0%, #00B8D4 100%);
+            color: #0B1437;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 229, 255, 0.4);
+        }
+        
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #8892B0;
+        }
+        
+        .login-link a {
+            color: #00E5FF;
+            text-decoration: none;
+            margin-left: 5px;
+        }
+        
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .message {
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            display: none;
+        }
+        
+        .message.error {
+            background: rgba(255, 77, 79, 0.15);
+            border: 1px solid rgba(255, 77, 79, 0.3);
+            color: #ff7875;
+            display: block;
+        }
+        
+        .message.success {
+            background: rgba(82, 196, 26, 0.15);
+            border: 1px solid rgba(82, 196, 26, 0.3);
+            color: #73d13d;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="logo-section">
+            <div class="logo-icon">🐾</div>
+            <div class="title">注册账号</div>
+            <div class="subtitle">创建您的宠物智能识别账号</div>
+        </div>
+        
+        <div id="message" class="message"></div>
+        
+        <form id="registerForm">
+            <div class="form-group">
+                <label class="form-label">用户名</label>
+                <input type="text" id="username" class="form-input" placeholder="至少 3 个字符" required>
+                <div class="form-hint">用于登录账号，不可修改</div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">昵称</label>
+                <input type="text" id="nickname" class="form-input" placeholder="显示昵称（可选）">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">密码</label>
+                <input type="password" id="password" class="form-input" placeholder="至少 6 个字符" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">确认密码</label>
+                <input type="password" id="confirmPassword" class="form-input" placeholder="再次输入密码" required>
+            </div>
+            
+            <button type="submit" class="btn-primary">注册</button>
+        </form>
+        
+        <div class="login-link">
+            已有账号？<a href="/login">返回登录</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const nickname = document.getElementById('nickname').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const messageEl = document.getElementById('message');
+            
+            messageEl.className = 'message';
+            messageEl.textContent = '';
+            
+            // 校验
+            if (username.length < 3) {
+                messageEl.className = 'message error';
+                messageEl.textContent = '用户名至少 3 个字符';
+                return;
+            }
+            if (password.length < 6) {
+                messageEl.className = 'message error';
+                messageEl.textContent = '密码至少 6 个字符';
+                return;
+            }
+            if (password !== confirmPassword) {
+                messageEl.className = 'message error';
+                messageEl.textContent = '两次密码输入不一致';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, nickname, role: 'user' })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    messageEl.className = 'message success';
+                    messageEl.textContent = '注册成功，正在跳转登录...';
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 1500);
+                } else {
+                    messageEl.className = 'message error';
+                    messageEl.textContent = data.message || '注册失败';
+                }
+            } catch (err) {
+                messageEl.className = 'message error';
+                messageEl.textContent = '网络错误，请重试';
+            }
+        });
+    </script>
+</body>
+</html>

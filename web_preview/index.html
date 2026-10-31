@@ -1,0 +1,2353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>宠物智能识别与情绪健康咨询系统</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg-deep: #060B1F;
+    --bg-primary: #0A1128;
+    --bg-secondary: #0F1A3D;
+    --bg-card: #132050;
+    --bg-card-hover: #1A2A66;
+    --accent: #00E5FF;
+    --accent-2: #00FFD5;
+    --accent-glow: rgba(0, 229, 255, 0.35);
+    --accent-dim: rgba(0, 229, 255, 0.12);
+    --accent-purple: #7C4DFF;
+    --accent-green: #00E676;
+    --accent-orange: #FFB300;
+    --accent-red: #FF1744;
+    --accent-pink: #FF4081;
+    --text: #E8ECF8;
+    --text-secondary: #8B95C0;
+    --text-muted: #4A5578;
+    --border: rgba(0, 229, 255, 0.15);
+    --border-strong: rgba(0, 229, 255, 0.45);
+    --border-glow: rgba(0, 229, 255, 0.6);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Noto Sans SC', sans-serif;
+    background: var(--bg-deep);
+    color: var(--text);
+    overflow: hidden;
+    height: 100vh;
+    position: relative;
+}
+body::before {
+    content: '';
+    position: fixed;
+    top:0; left:0; right:0; bottom:0;
+    background:
+        radial-gradient(ellipse at 20% 0%, rgba(0, 229, 255, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, rgba(0, 255, 213, 0.05) 0%, transparent 50%),
+        linear-gradient(rgba(0, 229, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 229, 255, 0.02) 1px, transparent 1px);
+    background-size: auto, auto, 40px 40px, 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+
+.corner-deco {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-color: var(--accent);
+    pointer-events: none;
+}
+.corner-tl { top: 8px; left: 8px; border-top: 2px solid; border-left: 2px solid; }
+.corner-tr { top: 8px; right: 8px; border-top: 2px solid; border-right: 2px solid; }
+.corner-bl { bottom: 8px; left: 8px; border-bottom: 2px solid; border-left: 2px solid; }
+.corner-br { bottom: 8px; right: 8px; border-bottom: 2px solid; border-right: 2px solid; }
+
+.login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    position: relative;
+    z-index: 1;
+}
+.login-container {
+    width: 460px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
+    padding: 40px 36px;
+    position: relative;
+    box-shadow: 0 0 60px -10px var(--accent-glow), 0 0 120px -20px rgba(0, 255, 213, 0.15);
+}
+.login-logo {
+    text-align: center;
+    margin-bottom: 28px;
+}
+.login-logo-icon {
+    width: 72px;
+    height: 72px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    margin: 0 auto 12px;
+    box-shadow: 0 0 40px var(--accent-glow), inset 0 2px 15px rgba(255, 255, 255, 0.2);
+    animation: logoPulse 3s ease-in-out infinite;
+}
+@keyframes logoPulse {
+    0%, 100% { box-shadow: 0 0 40px var(--accent-glow), inset 0 2px 15px rgba(255, 255, 255, 0.2); }
+    50% { box-shadow: 0 0 60px var(--accent-glow), 0 0 100px rgba(0, 255, 213, 0.3), inset 0 2px 15px rgba(255, 255, 255, 0.3); }
+}
+.login-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 2px;
+}
+.login-subtitle {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 1px;
+    margin-top: 4px;
+}
+.role-selector {
+    display: flex;
+    background: var(--bg-secondary);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+}
+.role-selector-btn {
+    flex: 1;
+    padding: 10px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+    font-family: inherit;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.role-selector-btn.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: var(--bg-deep);
+    box-shadow: 0 0 20px var(--accent-glow);
+}
+.role-selector-btn:not(.active):hover { color: var(--text); }
+.login-form-group { margin-bottom: 16px; }
+.login-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    display: block;
+}
+.login-input {
+    width: 100%;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: all 0.2s;
+}
+.login-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px -5px var(--accent-glow);
+}
+.login-input::placeholder { color: var(--text-muted); }
+.login-tip {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    line-height: 1.4;
+}
+.login-tip.admin { color: var(--accent-orange); }
+.login-tip.path { color: var(--accent); font-size: 10px; }
+.login-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: var(--bg-deep);
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: inherit;
+    margin-top: 8px;
+    position: relative;
+    overflow: hidden;
+}
+.login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px var(--accent-glow);
+}
+.login-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.6s;
+}
+.login-btn:hover::before { left: 100%; }
+.register-hint {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+.register-hint a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+}
+.register-hint a:hover { text-shadow: 0 0 10px var(--accent-glow); }
+.register-hint .divider {
+    display: block;
+    height: 1px;
+    background: var(--border);
+    margin: 14px 0;
+}
+.guest-login {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    border-radius: 10px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.25s;
+    font-family: inherit;
+    margin-top: 8px;
+}
+.guest-login:hover {
+    border-color: var(--border-strong);
+    color: var(--text);
+    background: var(--bg-secondary);
+}
+.hidden { display: none !important; }
+.admin-notice {
+    background: var(--accent-dim);
+    border: 1px dashed var(--accent-orange);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 12px;
+    color: var(--accent-orange);
+    line-height: 1.6;
+}
+.admin-notice strong { color: var(--accent-orange); }
+
+.app {
+    display: none;
+    height: 100vh;
+    position: relative;
+    z-index: 1;
+}
+.app.show { display: flex; }
+
+.sidebar {
+    width: 220px;
+    background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-primary) 100%);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 18px 12px;
+    flex-shrink: 0;
+    position: relative;
+}
+.sidebar::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 15%;
+    height: 70%;
+    width: 1px;
+    background: linear-gradient(180deg, transparent, var(--accent), transparent);
+    opacity: 0.4;
+}
+.logo-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 14px 10px 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 14px;
+}
+.logo-area .logo-icon-sm {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-bottom: 8px;
+    box-shadow: 0 0 25px var(--accent-glow);
+}
+.logo-area .logo-text-sm {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 2px;
+}
+.logo-area .logo-sub-sm {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 1px;
+    margin-top: 2px;
+}
+.nav-section-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 10px 12px 6px;
+}
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.25s;
+    margin-bottom: 4px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid transparent;
+    position: relative;
+}
+.nav-item:hover {
+    background: var(--bg-secondary);
+    color: var(--text);
+    border-color: var(--border);
+}
+.nav-item.active {
+    background: linear-gradient(90deg, var(--accent-dim), transparent);
+    color: var(--accent);
+    border-color: var(--border-strong);
+    box-shadow: 0 0 15px -5px var(--accent-glow);
+}
+.nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    background: var(--accent);
+    border-radius: 0 3px 3px 0;
+    box-shadow: 0 0 10px var(--accent);
+}
+.nav-item .nav-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+}
+.nav-item.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+.sidebar-bottom {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+.status-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-green);
+    box-shadow: 0 0 8px var(--accent-green);
+    animation: blink 2s ease-in-out infinite;
+}
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+.status-text {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+.logout-btn {
+    width: 100%;
+    padding: 8px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+.logout-btn:hover {
+    border-color: var(--accent-red);
+    color: var(--accent-red);
+    background: rgba(255, 23, 68, 0.1);
+}
+
+.main-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.topbar {
+    height: 64px;
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    flex-shrink: 0;
+    position: relative;
+}
+.topbar::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.6;
+}
+.topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.topbar-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+}
+.topbar-breadcrumb {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+.topbar-breadcrumb .sep { color: var(--accent); margin: 0 6px; }
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.user-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 14px 6px 6px;
+    background: var(--bg-secondary);
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text);
+}
+.user-badge .user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-purple));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+}
+.user-badge .user-role {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--accent-dim);
+    color: var(--accent);
+    margin-left: 4px;
+}
+.user-badge .user-role.admin {
+    background: var(--accent-orange);
+    color: var(--bg-deep);
+}
+.icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-size: 16px;
+}
+.icon-btn:hover {
+    color: var(--accent);
+    border-color: var(--border-strong);
+    box-shadow: 0 0 15px -5px var(--accent-glow);
+}
+
+.content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+}
+.page { display: none; animation: fadeIn 0.4s ease; }
+.page.active { display: block; }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.page-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.page-title .icon { font-size: 26px; }
+.page-subtitle {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+}
+.stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+}
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent));
+}
+.stat-card:hover {
+    border-color: var(--border-strong);
+    box-shadow: 0 0 30px -5px var(--accent-glow);
+    transform: translateY(-2px);
+}
+.stat-card .stat-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+.stat-card .stat-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+}
+.stat-card .stat-unit {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-left: 4px;
+}
+.stat-card .stat-trend {
+    font-size: 11px;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.stat-trend.up { color: var(--accent-green); }
+.stat-trend.down { color: var(--accent-red); }
+.stat-card .stat-icon {
+    position: absolute;
+    right: 14px;
+    top: 14px;
+    font-size: 20px;
+    opacity: 0.25;
+}
+
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
+.card-glow {
+    border-color: var(--border-strong);
+    box-shadow: 0 0 30px -10px var(--accent-glow);
+}
+.card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+}
+.card-title .title-icon { font-size: 16px; }
+.card-title .badge {
+    margin-left: auto;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--accent-dim);
+    color: var(--accent);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s;
+    font-family: inherit;
+    position: relative;
+    overflow: hidden;
+}
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: var(--bg-deep);
+    box-shadow: 0 4px 20px var(--accent-glow);
+}
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 30px var(--accent-glow);
+}
+.btn-secondary {
+    background: var(--bg-secondary);
+    color: var(--text);
+    border: 1px solid var(--border-strong);
+}
+.btn-secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+.btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+}
+.btn-ghost:hover {
+    color: var(--accent);
+    border-color: var(--border-strong);
+}
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-sm { padding: 6px 14px; font-size: 12px; }
+.btn-lg { padding: 14px 28px; font-size: 15px; }
+.btn-block { width: 100%; }
+.btn-danger {
+    background: transparent;
+    color: var(--accent-red);
+    border: 1px solid rgba(255, 23, 68, 0.3);
+}
+.btn-danger:hover {
+    background: rgba(255, 23, 68, 0.1);
+    border-color: var(--accent-red);
+}
+
+.upload-zone {
+    background: var(--bg-card);
+    border: 2px dashed var(--border-strong);
+    border-radius: 16px;
+    height: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+.upload-zone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 30% 30%, rgba(0, 229, 255, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 70% 70%, rgba(0, 255, 213, 0.05) 0%, transparent 50%);
+}
+.upload-zone::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    animation: scanline 3s linear infinite;
+}
+@keyframes scanline {
+    0% { top: 0; }
+    100% { top: 100%; }
+}
+.upload-zone:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 40px var(--accent-glow);
+}
+.upload-icon {
+    font-size: 52px;
+    color: var(--accent);
+    margin-bottom: 14px;
+    filter: drop-shadow(0 0 15px var(--accent-glow));
+    position: relative;
+    z-index: 1;
+}
+.upload-text {
+    font-size: 16px;
+    color: var(--text);
+    font-weight: 600;
+    margin-bottom: 6px;
+    position: relative;
+    z-index: 1;
+}
+.upload-hint {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    position: relative;
+    z-index: 1;
+}
+
+.result-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+}
+.result-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    transition: all 0.3s;
+}
+.result-card:hover {
+    border-color: var(--border-strong);
+    box-shadow: 0 0 25px -5px var(--accent-glow);
+}
+.result-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+}
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 12px;
+    border-bottom: 1px solid rgba(0, 229, 255, 0.05);
+}
+.result-item:last-child { border-bottom: none; }
+.result-item .label {
+    color: var(--text-secondary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.result-item .value {
+    color: var(--text);
+    font-weight: 500;
+    text-align: right;
+}
+.confidence-bar {
+    width: 100px;
+    height: 6px;
+    background: var(--bg-secondary);
+    border-radius: 3px;
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: middle;
+}
+.confidence-bar .fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-green), var(--accent));
+    border-radius: 3px;
+}
+.emotion-happy { color: var(--accent-green); font-weight: 700; }
+.emotion-anxious { color: var(--accent-orange); font-weight: 700; }
+.emotion-sad { color: var(--accent-purple); font-weight: 700; }
+
+.table-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+}
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+.data-table thead {
+    background: var(--bg-secondary);
+}
+.data-table th {
+    padding: 12px 10px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--accent);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border-strong);
+}
+.data-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+}
+.data-table tbody tr:hover {
+    background: var(--bg-secondary);
+}
+.table-actions { display: flex; gap: 8px; }
+.table-link {
+    color: var(--accent);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 11px;
+}
+.table-link.danger { color: var(--accent-red); }
+.table-link:hover { text-shadow: 0 0 8px currentColor; }
+.filter-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+.filter-select, .filter-input {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-family: inherit;
+    outline: none;
+}
+.filter-select:focus, .filter-input:focus {
+    border-color: var(--accent);
+}
+
+.knowledge-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+.knowledge-tab {
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+.knowledge-tab:hover { color: var(--text); }
+.knowledge-tab.active {
+    background: var(--accent-dim);
+    color: var(--accent);
+    border-color: var(--border-strong);
+}
+.knowledge-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+}
+.knowledge-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    transition: all 0.2s;
+}
+.knowledge-item:hover {
+    border-color: var(--border-strong);
+    box-shadow: 0 0 20px -5px var(--accent-glow);
+}
+.knowledge-item-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+}
+.knowledge-tags { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+.knowledge-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--accent-dim);
+    color: var(--accent);
+}
+.knowledge-desc {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 10px;
+}
+.knowledge-actions { display: flex; gap: 6px; padding-top: 8px; border-top: 1px solid var(--border); }
+
+.settings-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+}
+.settings-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-row .label {
+    color: var(--text-secondary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+}
+.settings-row .value { color: var(--text); font-weight: 500; }
+.settings-row .path {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+}
+.about-section { grid-column: 1 / -1; }
+.about-box {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+.about-logo {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    box-shadow: 0 0 30px var(--accent-glow);
+    flex-shrink: 0;
+}
+.about-info h3 { font-size: 15px; color: var(--text); margin-bottom: 4px; }
+.about-info .version {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    margin-bottom: 10px;
+}
+.about-info .tech {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+.input-group { margin-bottom: 10px; }
+.input-group label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 4px;
+}
+.input-group input, .input-group select, .input-group textarea {
+    width: 100%;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-family: inherit;
+    outline: none;
+}
+.input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--accent); }
+
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(6, 11, 31, 0.95);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    backdrop-filter: blur(10px);
+}
+.loading-overlay.show { display: flex; }
+.loading-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
+    padding: 36px 44px;
+    text-align: center;
+    box-shadow: 0 0 50px var(--accent-glow);
+    position: relative;
+}
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 16px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 15px;
+    color: var(--accent);
+    margin-bottom: 6px;
+}
+.loading-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+.toast-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 3000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.toast {
+    background: var(--bg-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    padding: 12px 18px;
+    min-width: 240px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 0 30px -5px var(--accent-glow);
+    animation: slideIn 0.3s ease;
+    font-size: 13px;
+}
+.toast.success { border-color: var(--accent-green); }
+.toast.success .toast-icon { color: var(--accent-green); }
+.toast.error { border-color: var(--accent-red); }
+.toast.error .toast-icon { color: var(--accent-red); }
+.toast.warning { border-color: var(--accent-orange); }
+.toast.warning .toast-icon { color: var(--accent-orange); }
+.toast.info { border-color: var(--accent); }
+.toast.info .toast-icon { color: var(--accent); }
+.toast-icon { font-size: 18px; }
+@keyframes slideIn {
+    from { transform: translateX(120%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(6, 11, 31, 0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 4000;
+    backdrop-filter: blur(6px);
+}
+.modal-overlay.show { display: flex; }
+.modal-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
+    padding: 28px;
+    width: 480px;
+    max-width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 0 60px -10px var(--accent-glow);
+    position: relative;
+}
+.modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+body.user-mode .admin-only { display: none !important; }
+body.admin-mode .user-only { display: none !important; }
+.role-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--accent-orange);
+    color: var(--bg-deep);
+    margin-left: 8px;
+}
+
+.emotion-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+.emotion-badge.happy { background: rgba(0, 230, 118, 0.15); color: var(--accent-green); }
+.emotion-badge.anxious { background: rgba(255, 179, 0, 0.15); color: var(--accent-orange); }
+.emotion-badge.sad { background: rgba(124, 77, 255, 0.15); color: var(--accent-purple); }
+.emotion-badge.neutral { background: var(--accent-dim); color: var(--accent); }
+
+.prediction-preview {
+    width: 100%;
+    height: 240px;
+    background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 80px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+}
+.prediction-preview::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.4));
+    pointer-events: none;
+}
+
+@media (max-width: 1100px) {
+    .result-grid { grid-template-columns: 1fr; }
+    .settings-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 800px) {
+    .sidebar { width: 60px; padding: 10px 6px; }
+    .logo-area, .nav-section-title, .nav-item span:not(.nav-icon), .sidebar-bottom .status-card, .logout-btn { display: none; }
+    .nav-item { justify-content: center; padding: 10px; }
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+    .content { padding: 14px; }
+}
+</style>
+</head>
+<body class="user-mode">
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-box">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="loadingText">AI 模型推理中...</div>
+        <div class="loading-sub" id="loadingSub">PROCESSING IMAGE DATA</div>
+    </div>
+</div>
+
+<!-- Login Page -->
+<div class="login-page" id="loginPage">
+    <div class="login-container">
+        <div class="corner-deco corner-tl"></div>
+        <div class="corner-deco corner-tr"></div>
+        <div class="corner-deco corner-bl"></div>
+        <div class="corner-deco corner-br"></div>
+
+        <div class="login-logo">
+            <div class="login-logo-icon">🐾</div>
+            <div class="login-title">PET AI SYSTEM</div>
+            <div class="login-subtitle">宠物智能识别与情绪健康咨询系统</div>
+        </div>
+
+        <div class="role-selector">
+            <button class="role-selector-btn active" data-role="user" onclick="selectRole('user')">
+                <span>👤</span> 普通用户
+            </button>
+            <button class="role-selector-btn" data-role="admin" onclick="selectRole('admin')">
+                <span>🛡️</span> 管理员
+            </button>
+        </div>
+
+        <div class="admin-notice hidden" id="adminNotice">
+            <strong>⚠ 管理员模式</strong><br>
+            管理员账号由系统预设，不支持自助注册。<br>
+            默认账号：<strong>admin</strong> / <strong>admin123</strong>
+        </div>
+
+        <div id="loginForm">
+            <div class="login-form-group">
+                <label class="login-label">用户名</label>
+                <input type="text" class="login-input" id="loginUsername" placeholder="请输入用户名">
+            </div>
+            <div class="login-form-group">
+                <label class="login-label">密码</label>
+                <input type="password" class="login-input" id="loginPassword" placeholder="请输入密码">
+            </div>
+            <div class="login-tip path" id="pathTip">
+                📁 数据存储路径：D:/PetAI_PetEmotionSystem/db/pet_emotion.db
+            </div>
+            <button class="login-btn" onclick="handleLogin()">
+                <span id="loginBtnText">登 录</span>
+            </button>
+
+            <div class="register-hint" id="registerHint">
+                还没有账号？ <a onclick="toggleRegister()">立即注册</a>
+                <span class="divider"></span>
+                <button class="guest-login" onclick="guestLogin()">
+                    👁️ 游客登录（体验模式）
+                </button>
+            </div>
+        </div>
+
+        <div id="registerForm" class="hidden">
+            <div class="login-form-group">
+                <label class="login-label">用户名</label>
+                <input type="text" class="login-input" id="regUsername" placeholder="3-20位字符">
+            </div>
+            <div class="login-form-group">
+                <label class="login-label">密码</label>
+                <input type="password" class="login-input" id="regPassword" placeholder="至少6位字符">
+            </div>
+            <div class="login-form-group">
+                <label class="login-label">确认密码</label>
+                <input type="password" class="login-input" id="regConfirm" placeholder="再次输入密码">
+            </div>
+            <div class="login-tip" id="regTip">
+                💡 注册后可使用图像识别、查看历史记录、访问知识库等功能
+            </div>
+            <button class="login-btn" onclick="handleRegister()">注 册</button>
+            <div class="register-hint">
+                已有账号？ <a onclick="toggleRegister()">返回登录</a>
+                <span class="divider"></span>
+                <button class="guest-login" onclick="guestLogin()">
+                    👁️ 游客登录（体验模式）
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main App -->
+<div class="app" id="mainApp">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo-area">
+            <div class="logo-icon-sm">🐾</div>
+            <div class="logo-text-sm">PET AI</div>
+            <div class="logo-sub-sm">INTELLIGENT SYSTEM</div>
+        </div>
+
+        <div class="nav-section-title">功能导航</div>
+        <div class="nav-item active" data-page="recognize" onclick="navigateTo('recognize')">
+            <span class="nav-icon">🔍</span><span>图像识别</span>
+        </div>
+        <div class="nav-item" data-page="records" onclick="navigateTo('records')">
+            <span class="nav-icon">📋</span><span>识别记录</span>
+        </div>
+        <div class="nav-item" data-page="knowledge" onclick="navigateTo('knowledge')">
+            <span class="nav-icon">📚</span><span>知识库</span>
+        </div>
+        <div class="nav-item admin-only" data-page="users" onclick="navigateTo('users')">
+            <span class="nav-icon">👥</span><span>用户管理</span>
+        </div>
+
+        <div class="nav-section-title">系统</div>
+        <div class="nav-item" data-page="settings" onclick="navigateTo('settings')">
+            <span class="nav-icon">⚙️</span><span>系统设置</span>
+        </div>
+
+        <div class="sidebar-bottom">
+            <div class="status-card">
+                <div class="status-dot"></div>
+                <div class="status-text" id="sidebarStatus">AI 引擎在线</div>
+            </div>
+            <button class="logout-btn" onclick="handleLogout()">🚪 退出登录</button>
+        </div>
+    </aside>
+
+    <!-- Main Area -->
+    <main class="main-area">
+        <!-- Topbar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <div class="topbar-title" id="topbarTitle">图像识别</div>
+                <div class="topbar-breadcrumb" id="topbarBreadcrumb">
+                    PET AI <span class="sep">/</span> <span id="breadcrumbPage">图像识别</span>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <div class="user-badge">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <span id="userName">用户名</span>
+                    <span class="user-role" id="userRole">USER</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="content">
+
+            <!-- Page: Recognize -->
+            <div class="page active" id="page-recognize">
+                <div class="page-header">
+                    <div>
+                        <div class="page-title"><span class="icon">🔍</span> 图像识别</div>
+                        <div class="page-subtitle">上传宠物图片，AI 自动识别品种与情绪状态</div>
+                    </div>
+                </div>
+
+                <div class="stat-row">
+                    <div class="stat-card">
+                        <div class="stat-label">本月识别次数</div>
+                        <div class="stat-value" id="statMonthCount">0<span class="stat-unit">次</span></div>
+                        <div class="stat-trend up">↑ 12% 较上月</div>
+                        <div class="stat-icon">📊</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">识别准确率</div>
+                        <div class="stat-value">96.8<span class="stat-unit">%</span></div>
+                        <div class="stat-trend up">↑ 0.3% 较上月</div>
+                        <div class="stat-icon">🎯</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">情绪识别模型</div>
+                        <div class="stat-value">v2.1<span class="stat-unit">.</span></div>
+                        <div class="stat-trend up">已优化 12 项指标</div>
+                        <div class="stat-icon">🧠</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">平均响应时间</div>
+                        <div class="stat-value">1.2<span class="stat-unit">秒</span></div>
+                        <div class="stat-trend up">↓ 0.3s 优化</div>
+                        <div class="stat-icon">⚡</div>
+                    </div>
+                </div>
+
+                <div class="upload-zone" id="uploadZone" onclick="simulateRecognition()">
+                    <div class="upload-icon">📷</div>
+                    <div class="upload-text">点击上传宠物图片</div>
+                    <div class="upload-hint">支持 JPG / PNG / BMP 格式，建议图片分辨率不低于 640x480</div>
+                </div>
+
+                <div id="recognitionResult" class="hidden">
+                    <div class="card card-glow" style="margin-bottom: 14px;">
+                        <div class="card-title">
+                            <span class="title-icon">🎯</span> 识别结果
+                            <span class="badge">CONFIDENCE: <span id="resultConfidence">94.5%</span></span>
+                        </div>
+                        <div class="prediction-preview" id="resultPreview">🐕</div>
+                    </div>
+                    <div class="result-grid">
+                        <div class="result-card">
+                            <div class="result-card-header">🐾 品种识别</div>
+                            <div class="result-item">
+                                <span class="label">主品种</span>
+                                <span class="value" id="resultBreed">金毛寻回犬</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="label">置信度</span>
+                                <span class="value">
+                                    <span class="confidence-bar"><span class="fill" style="width: 92%"></span></span>
+                                    &nbsp;92.1%
+                                </span>
+                            </div>
+                            <div class="result-item">
+                                <span class="label">次级可能</span>
+                                <span class="value" id="resultBreed2">拉布拉多 (5.3%)</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="label">特征匹配</span>
+                                <span class="value" id="resultFeatures">温顺型 / 大型犬</span>
+                            </div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-card-header">😊 情绪分析</div>
+                            <div class="result-item">
+                                <span class="label">主要情绪</span>
+                                <span class="value emotion-happy" id="resultEmotion">开心 / 兴奋</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="label">置信度</span>
+                                <span class="value">
+                                    <span class="confidence-bar"><span class="fill" style="width: 87%"></span></span>
+                                    &nbsp;87.3%
+                                </span>
+                            </div>
+                            <div class="result-item">
+                                <span class="label">情绪指标</span>
+                                <span class="value" id="resultMetrics">放松 · 好奇 · 友好</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="label">健康建议</span>
+                                <span class="value" id="resultAdvice">状态良好，继续保持</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page: Records -->
+            <div class="page" id="page-records">
+                <div class="page-header">
+                    <div>
+                        <div class="page-title"><span class="icon">📋</span> 识别记录</div>
+                        <div class="page-subtitle" id="recordsSubtitle">查看历史识别结果与情绪追踪记录</div>
+                    </div>
+                </div>
+
+                <div class="filter-bar">
+                    <select class="filter-select" id="filterEmotion" onchange="renderRecords()">
+                        <option value="">全部情绪</option>
+                        <option value="happy">开心 / 兴奋</option>
+                        <option value="anxious">焦虑 / 紧张</option>
+                        <option value="sad">低落 / 抑郁</option>
+                        <option value="neutral">平静 / 放松</option>
+                    </select>
+                    <select class="filter-select" id="filterBreed" onchange="renderRecords()">
+                        <option value="">全部品种</option>
+                        <option value="金毛寻回犬">金毛寻回犬</option>
+                        <option value="拉布拉多">拉布拉多</option>
+                        <option value="柯基">柯基</option>
+                        <option value="哈士奇">哈士奇</option>
+                        <option value="中华田园猫">中华田园猫</option>
+                        <option value="英国短毛猫">英国短毛猫</option>
+                    </select>
+                    <input type="text" class="filter-input" id="filterSearch" placeholder="🔍 搜索记录..." oninput="renderRecords()">
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>图片预览</th>
+                                <th>品种</th>
+                                <th>情绪</th>
+                                <th>置信度</th>
+                                <th>识别时间</th>
+                                <th class="admin-only">操作人</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recordsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Page: Knowledge -->
+            <div class="page" id="page-knowledge">
+                <div class="page-header">
+                    <div>
+                        <div class="page-title"><span class="icon">📚</span> 知识库</div>
+                        <div class="page-subtitle" id="knowledgeSubtitle">
+                            <span class="user-only">只读模式 · 浏览宠物照护知识</span>
+                            <span class="admin-only">管理模式 · 可增删改查知识库条目</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary admin-only" onclick="openKnowledgeModal()">+ 新增条目</button>
+                </div>
+
+                <div class="knowledge-tabs" id="knowledgeTabs"></div>
+                <div class="knowledge-list" id="knowledgeList"></div>
+            </div>
+
+            <!-- Page: Users (Admin only) -->
+            <div class="page admin-only" id="page-users">
+                <div class="page-header">
+                    <div>
+                        <div class="page-title"><span class="icon">👥</span> 用户管理</div>
+                        <div class="page-subtitle">管理员专属 · 管理系统用户与权限</div>
+                    </div>
+                    <button class="btn btn-primary" onclick="openUserModal()">+ 新增用户</button>
+                </div>
+
+                <div class="stat-row">
+                    <div class="stat-card">
+                        <div class="stat-label">总用户数</div>
+                        <div class="stat-value">1,247<span class="stat-unit">人</span></div>
+                        <div class="stat-trend up">↑ 23 本周新增</div>
+                        <div class="stat-icon">👥</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">活跃用户</div>
+                        <div class="stat-value">892<span class="stat-unit">人</span></div>
+                        <div class="stat-trend up">↑ 5.2% 活跃率</div>
+                        <div class="stat-icon">⚡</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">本月新增</div>
+                        <div class="stat-value">156<span class="stat-unit">人</span></div>
+                        <div class="stat-trend up">↑ 18% 较上月</div>
+                        <div class="stat-icon">📈</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">账号状态</div>
+                        <div class="stat-value">98.7<span class="stat-unit">%</span></div>
+                        <div class="stat-trend up">正常率</div>
+                        <div class="stat-icon">✓</div>
+                    </div>
+                </div>
+
+                <div class="filter-bar">
+                    <input type="text" class="filter-input" id="userSearch" placeholder="🔍 搜索用户名/邮箱..." oninput="renderUsers()">
+                    <select class="filter-select" id="userFilterStatus" onchange="renderUsers()">
+                        <option value="">全部状态</option>
+                        <option value="active">正常</option>
+                        <option value="disabled">已禁用</option>
+                    </select>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>用户名</th>
+                                <th>邮箱</th>
+                                <th>角色</th>
+                                <th>识别次数</th>
+                                <th>注册时间</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Page: Settings -->
+            <div class="page" id="page-settings">
+                <div class="page-header">
+                    <div>
+                        <div class="page-title"><span class="icon">⚙️</span> 系统设置</div>
+                        <div class="page-subtitle">系统配置与账号管理</div>
+                    </div>
+                </div>
+
+                <div class="settings-grid">
+                    <div class="card">
+                        <div class="card-title"><span class="title-icon">💾</span> 数据存储</div>
+                        <div class="settings-row">
+                            <span class="label">数据库路径</span>
+                            <span class="path">D:/PetAI_PetEmotionSystem/db/pet_emotion.db</span>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">数据库大小</span>
+                            <span class="value">24.7 MB</span>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">记录总数</span>
+                            <span class="value">18,432 条</span>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">上次备份</span>
+                            <span class="value">2026-07-30 03:00</span>
+                        </div>
+                        <div style="margin-top: 12px; display: flex; gap: 8px;">
+                            <button class="btn btn-secondary btn-sm" onclick="showToast('备份已启动', 'info')">立即备份</button>
+                            <button class="btn btn-ghost btn-sm" onclick="showToast('数据库已优化', 'success')">优化数据库</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title"><span class="title-icon">🧠</span> AI 模型</div>
+                        <div class="settings-row">
+                            <span class="label">识别模型版本</span>
+                            <span class="value">v2.1.0</span>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">情绪分析模型</span>
+                            <span class="value">v1.8.2</span>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">模型更新时间</span>
+                            <span class="value">2026-07-28</span>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">推理引擎</span>
+                            <span class="value">ONNX Runtime</span>
+                        </div>
+                        <div style="margin-top: 12px;">
+                            <button class="btn btn-secondary btn-sm" onclick="showToast('正在检查模型更新...', 'info')">检查更新</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title"><span class="title-icon">🔔</span> 通知设置</div>
+                        <div class="settings-row">
+                            <span class="label">情绪异常预警</span>
+                            <span class="value">已开启</span>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">每日报告推送</span>
+                            <span class="value">已开启</span>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">系统通知</span>
+                            <span class="value">已开启</span>
+                        </div>
+                    </div>
+
+                    <div class="card about-section">
+                        <div class="card-title"><span class="title-icon">ℹ️</span> 关于系统</div>
+                        <div class="about-box">
+                            <div class="about-logo">🐾</div>
+                            <div class="about-info">
+                                <h3>Pet AI 宠物智能识别系统</h3>
+                                <div class="version">VERSION 2.1.0 · BUILD 20260728</div>
+                                <div class="tech">
+                                    基于深度学习的宠物品种识别与情绪分析系统<br>
+                                    技术栈：Python · PyTorch · ONNX · SQLite · Flask<br>
+                                    © 2026 PetAI Team. All rights reserved.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<!-- Knowledge Modal -->
+<div class="modal-overlay" id="knowledgeModal">
+    <div class="modal-box">
+        <div class="modal-title" id="knowledgeModalTitle">📚 新增知识库条目</div>
+        <div class="input-group">
+            <label>标题</label>
+            <input type="text" id="knowledgeTitle" placeholder="请输入知识标题">
+        </div>
+        <div class="input-group">
+            <label>分类</label>
+            <select id="knowledgeCategory">
+                <option value="breed">品种知识</option>
+                <option value="emotion">情绪分析</option>
+                <option value="health">健康照护</option>
+                <option value="training">训练指南</option>
+                <option value="nutrition">营养饮食</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>标签（逗号分隔）</label>
+            <input type="text" id="knowledgeTags" placeholder="如：金毛,大型犬,温顺">
+        </div>
+        <div class="input-group">
+            <label>内容描述</label>
+            <textarea id="knowledgeDesc" rows="4" placeholder="请输入详细内容..."></textarea>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="closeKnowledgeModal()">取消</button>
+            <button class="btn btn-primary" onclick="saveKnowledge()">保存</button>
+        </div>
+    </div>
+</div>
+
+<!-- User Modal -->
+<div class="modal-overlay" id="userModal">
+    <div class="modal-box">
+        <div class="modal-title" id="userModalTitle">👤 新增用户</div>
+        <div class="input-group">
+            <label>用户名</label>
+            <input type="text" id="userUsername" placeholder="3-20位字符">
+        </div>
+        <div class="input-group">
+            <label>邮箱</label>
+            <input type="email" id="userEmail" placeholder="example@email.com">
+        </div>
+        <div class="input-group">
+            <label>角色</label>
+            <select id="userRole">
+                <option value="user">普通用户</option>
+                <option value="admin">管理员</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>状态</label>
+            <select id="userStatus">
+                <option value="active">正常</option>
+                <option value="disabled">已禁用</option>
+            </select>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="closeUserModal()">取消</button>
+            <button class="btn btn-primary" onclick="saveUser()">保存</button>
+        </div>
+    </div>
+</div>
+
+<script>
+var state = {
+    currentRole: 'user',
+    currentUser: null,
+    currentPage: 'recognize',
+    knowledgeCategory: 'breed',
+    editingKnowledgeId: null,
+    editingUserId: null
+};
+
+var records = [
+    { id: 'R001', img: '🐕', breed: '金毛寻回犬', emotion: 'happy', confidence: 94.5, time: '2026-07-31 14:23', operator: '张三' },
+    { id: 'R002', img: '🐈', breed: '英国短毛猫', emotion: 'neutral', confidence: 91.2, time: '2026-07-31 12:08', operator: '张三' },
+    { id: 'R003', img: '🐕‍🦺', breed: '哈士奇', emotion: 'anxious', confidence: 88.7, time: '2026-07-30 18:45', operator: '张三' },
+    { id: 'R004', img: '🦮', breed: '拉布拉多', emotion: 'happy', confidence: 96.1, time: '2026-07-30 09:30', operator: '李四' },
+    { id: 'R005', img: '🐕', breed: '柯基', emotion: 'sad', confidence: 82.4, time: '2026-07-29 21:15', operator: '王五' },
+    { id: 'R006', img: '🐈', breed: '中华田园猫', emotion: 'neutral', confidence: 89.8, time: '2026-07-29 16:22', operator: '张三' },
+    { id: 'R007', img: '🐕', breed: '金毛寻回犬', emotion: 'anxious', confidence: 85.6, time: '2026-07-28 11:40', operator: '赵六' },
+    { id: 'R008', img: '🐈‍⬛', breed: '英国短毛猫', emotion: 'happy', confidence: 93.3, time: '2026-07-27 20:05', operator: '张三' }
+];
+
+var knowledgeData = {
+    breed: [
+        { id: 1, title: '金毛寻回犬品种介绍', tags: ['大型犬', '温顺', '友好'], desc: '金毛寻回犬是一种大型、友好、聪明的犬种，以其温顺的性格和对人类的亲近而闻名。它们是优秀的家庭伴侣，喜欢户外活动。' },
+        { id: 2, title: '拉布拉多犬特征', tags: ['中型犬', '聪明', '导盲'], desc: '拉布拉多犬以其智慧和忠诚著称，是最受欢迎的家庭犬之一。它们性格温和，极易训练，常被用作导盲犬和搜救犬。' },
+        { id: 3, title: '柯基犬特点', tags: ['小型犬', '活泼', '可爱'], desc: '威尔士柯基犬是一种小型犬，以其短腿和蓬松的尾巴闻名。它们活泼、聪明，对主人忠诚，是很好的家庭宠物。' }
+    ],
+    emotion: [
+        { id: 4, title: '狗狗开心的表现', tags: ['情绪', '行为', '快乐'], desc: '狗狗开心时通常摇尾巴、眼神明亮、身体放松，可能会跳跃或舔人。识别这些信号有助于判断宠物的情绪状态。' },
+        { id: 5, title: '猫咪焦虑的信号', tags: ['情绪', '焦虑', '异常'], desc: '猫咪焦虑时可能表现为：过度舔毛、藏匿、食欲下降、叫声异常等。长期焦虑影响猫咪健康，需要及时关注。' }
+    ],
+    health: [
+        { id: 6, title: '宠物疫苗接种指南', tags: ['健康', '疫苗', '预防'], desc: '幼犬需要在6-8周开始接种疫苗，包括狂犬病、犬瘟热、细小病毒等。成年犬每年需要加强免疫。' },
+        { id: 7, title: '常见疾病识别', tags: ['健康', '疾病', '预警'], desc: '了解宠物常见疾病的早期症状，如呕吐、腹泻、食欲不振等，有助于及时就医，提高治愈率。' }
+    ],
+    training: [
+        { id: 8, title: '基础训练技巧', tags: ['训练', '行为', '教育'], desc: '使用正面强化法训练宠物，通过奖励表扬好行为，而非惩罚。保持训练时间短（5-10分钟），频率高。' }
+    ],
+    nutrition: [
+        { id: 9, title: '宠物饮食搭配', tags: ['营养', '饮食', '健康'], desc: '根据宠物年龄、体重和活动量选择合适的食品。注意蛋白质、脂肪、碳水化合物的均衡摄入。' },
+        { id: 10, title: '禁食食物清单', tags: ['营养', '禁忌', '中毒'], desc: '巧克力、葡萄、洋葱、大蒜、木糖醇等对宠物有毒，严重可致中毒甚至死亡。务必了解这些危险食物。' }
+    ]
+};
+
+var users = [
+    { id: 1, username: 'admin', email: 'admin@petai.com', role: 'admin', count: 156, regTime: '2025-12-01', status: 'active' },
+    { id: 2, username: 'zhangsan', email: 'zhangsan@example.com', role: 'user', count: 89, regTime: '2026-01-15', status: 'active' },
+    { id: 3, username: 'lisi', email: 'lisi@example.com', role: 'user', count: 34, regTime: '2026-03-22', status: 'active' },
+    { id: 4, username: 'wangwu', email: 'wangwu@example.com', role: 'user', count: 12, regTime: '2026-05-08', status: 'active' },
+    { id: 5, username: 'zhaoliu', email: 'zhaoliu@example.com', role: 'user', count: 67, regTime: '2026-02-14', status: 'disabled' },
+    { id: 6, username: 'qianqi', email: 'qianqi@example.com', role: 'user', count: 5, regTime: '2026-06-30', status: 'active' }
+];
+
+function selectRole(role) {
+    state.currentRole = role;
+    document.querySelectorAll('.role-selector-btn').forEach(function(btn) {
+        btn.classList.toggle('active', btn.dataset.role === role);
+    });
+    var adminNotice = document.getElementById('adminNotice');
+    var registerHint = document.getElementById('registerHint');
+    var pathTip = document.getElementById('pathTip');
+    if (role === 'admin') {
+        adminNotice.classList.remove('hidden');
+        if (!document.getElementById('registerForm').classList.contains('hidden')) {
+            toggleRegister();
+        }
+    } else {
+        adminNotice.classList.add('hidden');
+    }
+}
+
+function toggleRegister() {
+    var loginForm = document.getElementById('loginForm');
+    var registerForm = document.getElementById('registerForm');
+    if (state.currentRole === 'admin') {
+        showToast('管理员不支持注册，请使用预设账号', 'warning');
+        return;
+    }
+    loginForm.classList.toggle('hidden');
+    registerForm.classList.toggle('hidden');
+}
+
+function handleLogin() {
+    var username = document.getElementById('loginUsername').value.trim();
+    var password = document.getElementById('loginPassword').value.trim();
+    if (!username || !password) {
+        showToast('请输入用户名和密码', 'error');
+        return;
+    }
+    showLoading('正在验证账号...', 'AUTHENTICATING');
+    setTimeout(function() {
+        hideLoading();
+        if (state.currentRole === 'admin') {
+            if (username === 'admin' && password === 'admin123') {
+                loginSuccess(username, 'admin');
+            } else {
+                showToast('管理员账号或密码错误', 'error');
+            }
+        } else {
+            loginSuccess(username, 'user');
+        }
+    }, 1200);
+}
+
+function handleRegister() {
+    var username = document.getElementById('regUsername').value.trim();
+    var password = document.getElementById('regPassword').value.trim();
+    var confirm = document.getElementById('regConfirm').value.trim();
+    if (!username || !password) {
+        showToast('请填写完整注册信息', 'error');
+        return;
+    }
+    if (username.length < 3 || username.length > 20) {
+        showToast('用户名长度需在3-20位之间', 'error');
+        return;
+    }
+    if (password.length < 6) {
+        showToast('密码至少6位字符', 'error');
+        return;
+    }
+    if (password !== confirm) {
+        showToast('两次输入的密码不一致', 'error');
+        return;
+    }
+    showLoading('正在创建账号...', 'CREATING ACCOUNT');
+    setTimeout(function() {
+        hideLoading();
+        loginSuccess(username, 'user');
+        showToast('注册成功，欢迎加入！', 'success');
+    }, 1000);
+}
+
+function guestLogin() {
+    showLoading('正在进入体验模式...', 'GUEST MODE');
+    setTimeout(function() {
+        hideLoading();
+        loginSuccess('游客用户', 'user');
+        showToast('已进入游客体验模式', 'info');
+    }, 800);
+}
+
+function loginSuccess(username, role) {
+    state.currentUser = { username: username, role: role };
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('mainApp').classList.add('show');
+    document.body.className = role === 'admin' ? 'admin-mode' : 'user-mode';
+    var avatar = document.getElementById('userAvatar');
+    avatar.textContent = username.charAt(0).toUpperCase();
+    document.getElementById('userName').textContent = username;
+    var roleBadge = document.getElementById('userRole');
+    roleBadge.textContent = role === 'admin' ? 'ADMIN' : 'USER';
+    roleBadge.className = 'user-role' + (role === 'admin' ? ' admin' : '');
+    if (role === 'admin') {
+        navigateTo('recognize');
+    } else {
+        navigateTo('recognize');
+    }
+    renderKnowledge();
+    renderRecords();
+    renderUsers();
+}
+
+function handleLogout() {
+    if (!confirm('确定要退出登录吗？')) return;
+    state.currentUser = null;
+    state.currentRole = 'user';
+    document.getElementById('loginPage').style.display = 'flex';
+    document.getElementById('mainApp').classList.remove('show');
+    document.querySelectorAll('.role-selector-btn').forEach(function(btn) {
+        btn.classList.toggle('active', btn.dataset.role === 'user');
+    });
+    document.getElementById('loginUsername').value = '';
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('adminNotice').classList.add('hidden');
+    showToast('已安全退出', 'info');
+}
+
+function navigateTo(page) {
+    state.currentPage = page;
+    document.querySelectorAll('.page').forEach(function(p) {
+        p.classList.remove('active');
+    });
+    document.querySelectorAll('.nav-item').forEach(function(n) {
+        n.classList.remove('active');
+    });
+    var targetPage = document.getElementById('page-' + page);
+    var targetNav = document.querySelector('.nav-item[data-page="' + page + '"]');
+    if (targetPage) targetPage.classList.add('active');
+    if (targetNav) targetNav.classList.add('active');
+    var titles = {
+        recognize: '图像识别',
+        records: '识别记录',
+        knowledge: '知识库',
+        users: '用户管理',
+        settings: '系统设置'
+    };
+    document.getElementById('topbarTitle').textContent = titles[page] || page;
+    document.getElementById('breadcrumbPage').textContent = titles[page] || page;
+}
+
+function simulateRecognition() {
+    showLoading('AI 模型推理中...', 'PROCESSING IMAGE DATA');
+    var breeds = ['金毛寻回犬', '拉布拉多', '柯基', '哈士奇', '中华田园猫', '英国短毛猫'];
+    var emotions = [
+        { key: 'happy', label: '开心 / 兴奋', class: 'emotion-happy', emoji: '😊' },
+        { key: 'neutral', label: '平静 / 放松', class: 'emotion-happy', emoji: '😌' },
+        { key: 'anxious', label: '焦虑 / 紧张', class: 'emotion-anxious', emoji: '😟' },
+        { key: 'sad', label: '低落 / 抑郁', class: 'emotion-sad', emoji: '😔' }
+    ];
+    var petEmojis = ['🐕', '🐈', '🐕‍🦺', '🐈‍⬛', '🦮', '🐩'];
+    var breed = breeds[Math.floor(Math.random() * breeds.length)];
+    var emotion = emotions[Math.floor(Math.random() * emotions.length)];
+    var emoji = petEmojis[Math.floor(Math.random() * petEmojis.length)];
+    var confidence = (85 + Math.random() * 13).toFixed(1);
+    setTimeout(function() {
+        hideLoading();
+        document.getElementById('resultConfidence').textContent = confidence + '%';
+        document.getElementById('resultPreview').textContent = emoji;
+        document.getElementById('resultBreed').textContent = breed;
+        document.getElementById('resultBreed2').textContent = breeds[Math.floor(Math.random() * breeds.length)] + ' (' + (Math.random() * 8).toFixed(1) + '%)';
+        document.getElementById('resultEmotion').textContent = emotion.label;
+        document.getElementById('resultEmotion').className = 'value ' + emotion.class;
+        var advices = ['状态良好，继续保持', '建议增加互动时间', '注意观察情绪变化', '适当运动有助于缓解'];
+        document.getElementById('resultAdvice').textContent = advices[Math.floor(Math.random() * advices.length)];
+        document.getElementById('recognitionResult').classList.remove('hidden');
+        document.getElementById('statMonthCount').innerHTML = (Math.floor(Math.random() * 200) + 50) + '<span class="stat-unit">次</span>';
+        showToast('识别完成！置信度 ' + confidence + '%', 'success');
+        addRecord(breed, emotion.key, parseFloat(confidence), emoji);
+    }, 1500);
+}
+
+function addRecord(breed, emotion, confidence, emoji) {
+    var now = new Date();
+    var timeStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+    var newRecord = {
+        id: 'R' + String(records.length + 1).padStart(3, '0'),
+        img: emoji,
+        breed: breed,
+        emotion: emotion,
+        confidence: confidence,
+        time: timeStr,
+        operator: state.currentUser ? state.currentUser.username : '游客'
+    };
+    records.unshift(newRecord);
+    renderRecords();
+}
+
+function renderRecords() {
+    var tbody = document.getElementById('recordsTable');
+    var filterEmotion = document.getElementById('filterEmotion').value;
+    var filterBreed = document.getElementById('filterBreed').value;
+    var filterSearch = document.getElementById('filterSearch').value.toLowerCase();
+    var isAdmin = state.currentUser && state.currentUser.role === 'admin';
+    var filtered = records.filter(function(r) {
+        if (!isAdmin && state.currentUser && state.currentUser.username !== 'admin') {
+            if (r.operator !== state.currentUser.username && r.operator !== '张三') return false;
+        }
+        if (filterEmotion && r.emotion !== filterEmotion) return false;
+        if (filterBreed && r.breed !== filterBreed) return false;
+        if (filterSearch && r.breed.toLowerCase().indexOf(filterSearch) === -1 && r.id.toLowerCase().indexOf(filterSearch) === -1) return false;
+        return true;
+    });
+    var emotionLabels = { happy: '开心', anxious: '焦虑', sad: '低落', neutral: '平静' };
+    var emotionClasses = { happy: 'happy', anxious: 'anxious', sad: 'sad', neutral: 'neutral' };
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:30px; color:var(--text-muted);">暂无记录</td></tr>';
+        return;
+    }
+    tbody.innerHTML = filtered.map(function(r) {
+        return '<tr>' +
+            '<td>' + r.id + '</td>' +
+            '<td style="font-size:28px;">' + r.img + '</td>' +
+            '<td>' + r.breed + '</td>' +
+            '<td><span class="emotion-badge ' + emotionClasses[r.emotion] + '">' + emotionLabels[r.emotion] + '</span></td>' +
+            '<td>' + r.confidence + '%</td>' +
+            '<td style="font-family:Share Tech Mono,monospace; font-size:11px;">' + r.time + '</td>' +
+            '<td class="admin-only">' + r.operator + '</td>' +
+            '<td><div class="table-actions"><a class="table-link" onclick="showToast(\'查看详情：' + r.id + '\', \'info\')">详情</a><a class="table-link danger" onclick="deleteRecord(\'' + r.id + '\')">删除</a></div></td>' +
+            '</tr>';
+    }).join('');
+    var subtitle = document.getElementById('recordsSubtitle');
+    if (subtitle) {
+        subtitle.textContent = (isAdmin ? '全部记录' : '我的记录') + ' · 共 ' + filtered.length + ' 条';
+    }
+}
+
+function deleteRecord(id) {
+    if (!confirm('确定删除记录 ' + id + ' 吗？')) return;
+    records = records.filter(function(r) { return r.id !== id; });
+    renderRecords();
+    showToast('记录已删除', 'success');
+}
+
+function renderKnowledge() {
+    var tabsContainer = document.getElementById('knowledgeTabs');
+    var categories = [
+        { key: 'breed', label: '🐾 品种知识' },
+        { key: 'emotion', label: '😊 情绪分析' },
+        { key: 'health', label: '💊 健康照护' },
+        { key: 'training', label: '🎓 训练指南' },
+        { key: 'nutrition', label: '🍖 营养饮食' }
+    ];
+    tabsContainer.innerHTML = categories.map(function(c) {
+        return '<div class="knowledge-tab' + (c.key === state.knowledgeCategory ? ' active' : '') + '" onclick="switchKnowledgeCategory(\'' + c.key + '\')">' + c.label + '</div>';
+    }).join('');
+    var listContainer = document.getElementById('knowledgeList');
+    var items = knowledgeData[state.knowledgeCategory] || [];
+    if (items.length === 0) {
+        listContainer.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-muted);">暂无知识条目</div>';
+        return;
+    }
+    var isAdmin = state.currentUser && state.currentUser.role === 'admin';
+    listContainer.innerHTML = items.map(function(item) {
+        return '<div class="knowledge-item">' +
+            '<div class="knowledge-item-title">' + item.title + '</div>' +
+            '<div class="knowledge-tags">' + item.tags.map(function(t) { return '<span class="knowledge-tag">' + t + '</span>'; }).join('') + '</div>' +
+            '<div class="knowledge-desc">' + item.desc + '</div>' +
+            '<div class="knowledge-actions">' +
+            (isAdmin ? '<button class="btn btn-ghost btn-sm" onclick="editKnowledge(' + item.id + ')">✏️ 编辑</button><button class="btn btn-danger btn-sm" onclick="deleteKnowledge(' + item.id + ')">🗑️ 删除</button>' : '<span style="font-size:11px; color:var(--text-muted);">📖 只读查看</span>') +
+            '</div>' +
+            '</div>';
+    }).join('');
+}
+
+function switchKnowledgeCategory(cat) {
+    state.knowledgeCategory = cat;
+    renderKnowledge();
+}
+
+function openKnowledgeModal(id) {
+    state.editingKnowledgeId = id || null;
+    var modal = document.getElementById('knowledgeModal');
+    var title = document.getElementById('knowledgeModalTitle');
+    if (id) {
+        var item = null;
+        Object.keys(knowledgeData).forEach(function(k) {
+            var found = knowledgeData[k].find(function(i) { return i.id === id; });
+            if (found) item = found;
+        });
+        if (item) {
+            title.textContent = '✏️ 编辑知识条目';
+            document.getElementById('knowledgeTitle').value = item.title;
+            document.getElementById('knowledgeCategory').value = state.knowledgeCategory;
+            document.getElementById('knowledgeTags').value = item.tags.join(',');
+            document.getElementById('knowledgeDesc').value = item.desc;
+        }
+    } else {
+        title.textContent = '📚 新增知识库条目';
+        document.getElementById('knowledgeTitle').value = '';
+        document.getElementById('knowledgeCategory').value = state.knowledgeCategory;
+        document.getElementById('knowledgeTags').value = '';
+        document.getElementById('knowledgeDesc').value = '';
+    }
+    modal.classList.add('show');
+}
+
+function closeKnowledgeModal() {
+    document.getElementById('knowledgeModal').classList.remove('show');
+    state.editingKnowledgeId = null;
+}
+
+function saveKnowledge() {
+    var title = document.getElementById('knowledgeTitle').value.trim();
+    var category = document.getElementById('knowledgeCategory').value;
+    var tagsStr = document.getElementById('knowledgeTags').value.trim();
+    var desc = document.getElementById('knowledgeDesc').value.trim();
+    if (!title || !desc) {
+        showToast('请填写标题和内容', 'error');
+        return;
+    }
+    var tags = tagsStr ? tagsStr.split(/[,，]/).map(function(t) { return t.trim(); }).filter(Boolean) : [];
+    if (state.editingKnowledgeId) {
+        Object.keys(knowledgeData).forEach(function(k) {
+            var idx = knowledgeData[k].findIndex(function(i) { return i.id === state.editingKnowledgeId; });
+            if (idx !== -1) {
+                knowledgeData[k][idx].title = title;
+                knowledgeData[k][idx].tags = tags;
+                knowledgeData[k][idx].desc = desc;
+            }
+        });
+        showToast('知识条目已更新', 'success');
+    } else {
+        var newId = Date.now();
+        if (!knowledgeData[category]) knowledgeData[category] = [];
+        knowledgeData[category].push({ id: newId, title: title, tags: tags, desc: desc });
+        showToast('知识条目已添加', 'success');
+    }
+    closeKnowledgeModal();
+    renderKnowledge();
+}
+
+function editKnowledge(id) {
+    openKnowledgeModal(id);
+}
+
+function deleteKnowledge(id) {
+    if (!confirm('确定删除该知识条目吗？')) return;
+    Object.keys(knowledgeData).forEach(function(k) {
+        knowledgeData[k] = knowledgeData[k].filter(function(i) { return i.id !== id; });
+    });
+    renderKnowledge();
+    showToast('知识条目已删除', 'success');
+}
+
+function renderUsers() {
+    var tbody = document.getElementById('usersTable');
+    if (!tbody) return;
+    var search = document.getElementById('userSearch') ? document.getElementById('userSearch').value.toLowerCase() : '';
+    var statusFilter = document.getElementById('userFilterStatus') ? document.getElementById('userFilterStatus').value : '';
+    var filtered = users.filter(function(u) {
+        if (search && u.username.toLowerCase().indexOf(search) === -1 && u.email.toLowerCase().indexOf(search) === -1) return false;
+        if (statusFilter && u.status !== statusFilter) return false;
+        return true;
+    });
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:30px; color:var(--text-muted);">暂无用户</td></tr>';
+        return;
+    }
+    tbody.innerHTML = filtered.map(function(u) {
+        var roleBadge = u.role === 'admin'
+            ? '<span class="emotion-badge anxious">🛡️ 管理员</span>'
+            : '<span class="emotion-badge neutral">👤 普通用户</span>';
+        var statusBadge = u.status === 'active'
+            ? '<span class="emotion-badge happy">● 正常</span>'
+            : '<span class="emotion-badge sad">● 已禁用</span>';
+        return '<tr>' +
+            '<td>' + u.id + '</td>' +
+            '<td>' + u.username + '</td>' +
+            '<td style="font-family:Share Tech Mono,monospace; font-size:11px;">' + u.email + '</td>' +
+            '<td>' + roleBadge + '</td>' +
+            '<td>' + u.count + '</td>' +
+            '<td style="font-family:Share Tech Mono,monospace; font-size:11px;">' + u.regTime + '</td>' +
+            '<td>' + statusBadge + '</td>' +
+            '<td><div class="table-actions">' +
+            '<a class="table-link" onclick="editUser(' + u.id + ')">编辑</a>' +
+            (u.status === 'active'
+                ? '<a class="table-link danger" onclick="toggleUserStatus(' + u.id + ')">禁用</a>'
+                : '<a class="table-link" onclick="toggleUserStatus(' + u.id + ')">启用</a>') +
+            '</div></td>' +
+            '</tr>';
+    }).join('');
+}
+
+function openUserModal(id) {
+    state.editingUserId = id || null;
+    var modal = document.getElementById('userModal');
+    if (id) {
+        var user = users.find(function(u) { return u.id === id; });
+        if (user) {
+            document.getElementById('userModalTitle').textContent = '✏️ 编辑用户';
+            document.getElementById('userUsername').value = user.username;
+            document.getElementById('userEmail').value = user.email;
+            document.getElementById('userRole').value = user.role;
+            document.getElementById('userStatus').value = user.status;
+        }
+    } else {
+        document.getElementById('userModalTitle').textContent = '👤 新增用户';
+        document.getElementById('userUsername').value = '';
+        document.getElementById('userEmail').value = '';
+        document.getElementById('userRole').value = 'user';
+        document.getElementById('userStatus').value = 'active';
+    }
+    modal.classList.add('show');
+}
+
+function closeUserModal() {
+    document.getElementById('userModal').classList.remove('show');
+    state.editingUserId = null;
+}
+
+function saveUser() {
+    var username = document.getElementById('userUsername').value.trim();
+    var email = document.getElementById('userEmail').value.trim();
+    var role = document.getElementById('userRole').value;
+    var status = document.getElementById('userStatus').value;
+    if (!username || !email) {
+        showToast('请填写完整信息', 'error');
+        return;
+    }
+    if (state.editingUserId) {
+        var user = users.find(function(u) { return u.id === state.editingUserId; });
+        if (user) {
+            user.username = username;
+            user.email = email;
+            user.role = role;
+            user.status = status;
+        }
+        showToast('用户信息已更新', 'success');
+    } else {
+        var newId = Math.max.apply(null, users.map(function(u) { return u.id; })) + 1;
+        var now = new Date();
+        var timeStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+        users.push({ id: newId, username: username, email: email, role: role, count: 0, regTime: timeStr, status: status });
+        showToast('用户已创建', 'success');
+    }
+    closeUserModal();
+    renderUsers();
+}
+
+function editUser(id) {
+    openUserModal(id);
+}
+
+function toggleUserStatus(id) {
+    var user = users.find(function(u) { return u.id === id; });
+    if (user) {
+        user.status = user.status === 'active' ? 'disabled' : 'active';
+        showToast('用户状态已更新', 'success');
+        renderUsers();
+    }
+}
+
+function showLoading(text, sub) {
+    document.getElementById('loadingText').textContent = text || '加载中...';
+    document.getElementById('loadingSub').textContent = sub || 'PROCESSING';
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+function showToast(message, type) {
+    type = type || 'info';
+    var icons = { success: '✓', error: '✕', warning: '⚠', info: 'ℹ' };
+    var toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    toast.innerHTML = '<span class="toast-icon">' + (icons[type] || 'ℹ') + '</span><span>' + message + '</span>';
+    document.getElementById('toastContainer').appendChild(toast);
+    setTimeout(function() {
+        toast.style.transition = 'all 0.3s';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(120%)';
+        setTimeout(function() {
+            toast.remove();
+        }, 300);
+    }, 3000);
+}
+
+document.getElementById('loadingOverlay').addEventListener('click', function(e) {
+    if (e.target.id === 'loadingOverlay') {
+        hideLoading();
+    }
+});
+
+document.getElementById('knowledgeModal').addEventListener('click', function(e) {
+    if (e.target.id === 'knowledgeModal') closeKnowledgeModal();
+});
+
+document.getElementById('userModal').addEventListener('click', function(e) {
+    if (e.target.id === 'userModal') closeUserModal();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeKnowledgeModal();
+        closeUserModal();
+    }
+});
+</script>
+
+</body>
+</html>

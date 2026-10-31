@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宠物智能识别与情绪健康咨询系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-dark: #030814;
+            --bg-mid: #0a1628;
+            --neon-cyan: #00E5FF;
+            --neon-blue: #0088FF;
+            --neon-purple: #8A2BE2;
+            --neon-green: #00FF88;
+            --neon-gold: #FFD700;
+            --neon-red: #FF3D5A;
+            --text: #E8F4FF;
+            --text-dim: #6B8CAE;
+            --glow-cyan: 0 0 10px rgba(0, 229, 255, 0.5), 0 0 30px rgba(0, 229, 255, 0.3);
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            display: flex;
+            color: var(--text);
+            overflow: hidden;
+            position: relative;
+        }
+
+        #particles-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(0, 229, 255, 0.1) 0%, transparent 40%),
+                radial-gradient(ellipse at 80% 80%, rgba(138, 43, 226, 0.08) 0%, transparent 40%),
+                radial-gradient(ellipse at 50% 50%, rgba(0, 136, 255, 0.04) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .login-wrapper {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ===== 左侧：登录表单 ===== */
+        .login-left {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            position: relative;
+            background: linear-gradient(135deg, rgba(5, 10, 25, 0.95) 0%, rgba(10, 22, 40, 0.9) 100%);
+        }
+
+        .login-left::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(circle at 30% 20%, rgba(0, 229, 255, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(138, 43, 226, 0.04) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .login-form-container {
+            width: 420px;
+            max-width: 100%;
+            position: relative;
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 36px;
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .brand-logo {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 16px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-outer-ring {
+            position: absolute;
+            inset: 0;
+            border: 2px solid transparent;
+            border-radius: 18px;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple)) border-box;
+            -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            animation: logoRotate 10s linear infinite;
+        }
+
+        @keyframes logoRotate {
+            to { transform: rotate(360deg); }
+        }
+
+        .logo-inner-ring {
+            position: absolute;
+            inset: 8px;
+            border: 1px solid rgba(0, 229, 255, 0.4);
+            border-radius: 14px;
+            animation: logoRotate 6s linear infinite reverse;
+        }
+
+        .logo-emoji {
+            font-size: 32px;
+            position: relative;
+            z-index: 1;
+            filter: drop-shadow(0 0 12px rgba(0, 229, 255, 0.8));
+            animation: emojiFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes emojiFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        .brand-title {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #fff 0%, var(--neon-cyan) 50%, var(--neon-purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 6px;
+        }
+
+        .brand-subtitle {
+            font-size: 12px;
+            color: var(--text-dim);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .form-card {
+            background: rgba(10, 20, 40, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 32px 28px;
+            border: 1px solid rgba(0, 229, 255, 0.15);
+            position: relative;
+            animation: slideUp 0.8s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .form-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 10%; right: 10%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--neon-cyan), var(--neon-purple), transparent);
+        }
+
+        .form-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            pointer-events: none;
+            background: radial-gradient(circle at var(--glow-x, 50%) var(--glow-y, 50%), rgba(0, 229, 255, 0.08), transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .form-card:hover::after {
+            opacity: 1;
+        }
+
+        #message {
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            display: none;
+            animation: shakeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes shakeIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        #message.error {
+            background: rgba(255, 61, 90, 0.12);
+            border: 1px solid rgba(255, 61, 90, 0.3);
+            color: #ff7891;
+            display: block;
+        }
+
+        #message.success {
+            background: rgba(0, 255, 136, 0.12);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            color: #7fffd4;
+            display: block;
+        }
+
+        .role-selector {
+            display: flex;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(0, 229, 255, 0.1);
+            animation: slideUp 0.8s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .role-btn {
+            flex: 1;
+            padding: 10px 16px;
+            text-align: center;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            font-size: 13px;
+            color: var(--text-dim);
+            border: none;
+            background: transparent;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .role-btn.active {
+            background: linear-gradient(135deg, rgba(0, 229, 255, 0.2) 0%, rgba(138, 43, 226, 0.15) 100%);
+            color: var(--neon-cyan);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.15);
+        }
+
+        .role-btn:not(.active):hover {
+            color: #a0b0c8;
+        }
+
+        .role-btn .role-icon {
+            margin-right: 6px;
+        }
+
+        .admin-hint {
+            background: rgba(138, 43, 226, 0.1);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 20px;
+            font-size: 12px;
+            color: #b967ff;
+            display: none;
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .admin-hint.show {
+            display: block;
+        }
+
+        .admin-hint strong {
+            color: var(--neon-cyan);
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+            animation: slideUp 0.8s 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper::before {
+            content: '';
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1px;
+            height: 20px;
+            background: rgba(0, 229, 255, 0.2);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 14px 12px 36px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 229, 255, 0.12);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            outline: none;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.1), 0 0 20px rgba(0, 229, 255, 0.1);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .form-input::placeholder {
+            color: #3d4f6a;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-purple) 100%);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            margin-top: 8px;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.8s 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .login-btn:hover::before {
+            left: 100%;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 229, 255, 0.4), 0 0 50px rgba(138, 43, 226, 0.3);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .guest-btn {
+            width: 100%;
+            padding: 13px;
+            background: rgba(0, 229, 255, 0.05);
+            color: var(--neon-cyan);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            border-radius: 12px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            margin-top: 12px;
+            font-weight: 500;
+            animation: slideUp 0.8s 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .guest-btn:hover {
+            background: rgba(0, 229, 255, 0.1);
+            border-color: rgba(0, 229, 255, 0.4);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .guest-btn:active {
+            transform: translateY(0);
+        }
+
+        .register-area {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--text-dim);
+            animation: slideUp 0.8s 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .register-area.hidden {
+            display: none;
+        }
+
+        .register-area a {
+            color: var(--neon-cyan);
+            text-decoration: none;
+            margin-left: 6px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .register-area a:hover {
+            text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+        }
+
+        .footer-info {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            animation: slideUp 0.8s 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        /* ===== 右侧：宠物展示 ===== */
+        .login-right {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: linear-gradient(135deg, rgba(0, 10, 30, 0.9) 0%, rgba(20, 10, 40, 0.9) 100%);
+            overflow: hidden;
+        }
+
+        .login-right::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 20% 30%, rgba(0, 229, 255, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(138, 43, 226, 0.06) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(0, 255, 136, 0.03) 0%, transparent 50%);
+        }
+
+        .right-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .right-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #fff 0%, var(--neon-cyan) 50%, var(--neon-purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: fadeInUp 1s 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .right-desc {
+            font-size: 14px;
+            color: var(--text-dim);
+            margin-bottom: 36px;
+            animation: fadeInUp 1s 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .pet-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 380px;
+            margin: 0 auto;
+        }
+
+        .pet-category {
+            background: rgba(0, 229, 255, 0.05);
+            border: 1px solid rgba(0, 229, 255, 0.15);
+            border-radius: 16px;
+            padding: 24px 16px;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            cursor: pointer;
+            animation: petCardIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+            overflow: hidden;
+        }
+
+        .pet-category:nth-child(1) { animation-delay: 0.5s; }
+        .pet-category:nth-child(2) { animation-delay: 0.55s; }
+        .pet-category:nth-child(3) { animation-delay: 0.6s; }
+        .pet-category:nth-child(4) { animation-delay: 0.65s; }
+        .pet-category:nth-child(5) { animation-delay: 0.7s; }
+        .pet-category:nth-child(6) { animation-delay: 0.75s; }
+
+        @keyframes petCardIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .pet-category::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(0, 229, 255, 0.1), transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .pet-category:hover::before {
+            opacity: 1;
+        }
+
+        .pet-category:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 229, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 229, 255, 0.15);
+        }
+
+        .pet-emoji {
+            font-size: 36px;
+            margin-bottom: 10px;
+            display: block;
+            filter: drop-shadow(0 0 12px rgba(0, 229, 255, 0.5));
+            animation: emojiBounce 2s ease-in-out infinite;
+        }
+
+        @keyframes emojiBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .pet-category:nth-child(2) .pet-emoji { animation-delay: 0.2s; }
+        .pet-category:nth-child(3) .pet-emoji { animation-delay: 0.4s; }
+        .pet-category:nth-child(4) .pet-emoji { animation-delay: 0.6s; }
+        .pet-category:nth-child(5) .pet-emoji { animation-delay: 0.8s; }
+        .pet-category:nth-child(6) .pet-emoji { animation-delay: 1s; }
+
+        .pet-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .pet-desc {
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        .right-features {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+            animation: fadeInUp 1s 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-dim);
+            padding: 8px 16px;
+            background: rgba(0, 229, 255, 0.05);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 229, 255, 0.1);
+        }
+
+        .feature-icon {
+            color: var(--neon-cyan);
+        }
+
+        /* ===== 电路动画 ===== */
+        .circuit-line {
+            position: absolute;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+            opacity: 0.4;
+            animation: circuitFlow 3s linear infinite;
+        }
+
+        .circuit-line-1 {
+            top: 15%;
+            left: 0;
+            width: 100%;
+        }
+
+        .circuit-line-2 {
+            bottom: 25%;
+            left: 0;
+            width: 100%;
+            animation-delay: 1.5s;
+        }
+
+        @keyframes circuitFlow {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 900px) {
+            .login-right {
+                display: none;
+            }
+            .login-left {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particles-canvas"></canvas>
+
+    <div class="login-wrapper">
+        <!-- 左侧登录表单 -->
+        <div class="login-left">
+            <div class="login-form-container">
+                <div class="brand-header">
+                    <div class="brand-logo">
+                        <div class="logo-outer-ring"></div>
+                        <div class="logo-inner-ring"></div>
+                        <span class="logo-emoji">🐾</span>
+                    </div>
+                    <div class="brand-title">宠物智能识别系统</div>
+                    <div class="brand-subtitle">AI Pet Emotion System</div>
+                </div>
+
+                <div class="form-card">
+                    <div id="message"></div>
+
+                    <div class="role-selector">
+                        <button class="role-btn active" data-role="user">
+                            <span class="role-icon">👤</span>普通用户
+                        </button>
+                        <button class="role-btn" data-role="admin">
+                            <span class="role-icon">🛡️</span>管理员
+                        </button>
+                    </div>
+
+                    <div id="adminHint" class="admin-hint" style="display:none">
+                    </div>
+
+                    <form id="loginForm">
+                        <div class="input-group">
+                            <label class="input-label">账号</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="username" class="form-input" placeholder="请输入用户名" required>
+                                <span class="input-icon">👤</span>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">密码</label>
+                            <div class="input-wrapper">
+                                <input type="password" id="password" class="form-input" placeholder="请输入密码" required>
+                                <span class="input-icon">🔒</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="login-btn">登 录</button>
+                    </form>
+
+                    <button id="guestBtn" class="guest-btn">🚀 游客免登录体验</button>
+
+                    <div class="register-area" id="registerLink">
+                        还没有账号？<a href="/register">立即注册</a>
+                    </div>
+                </div>
+
+                <div class="footer-info">
+                    PET AI EMOTION SYSTEM · V2.0 PRO
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧宠物展示 -->
+        <div class="login-right">
+            <div class="circuit-line circuit-line-1"></div>
+            <div class="circuit-line circuit-line-2"></div>
+            
+            <div class="right-content">
+                <div class="right-title">多物种智能识别</div>
+                <div class="right-desc">支持9大类宠物品种识别 · 情绪分析 · 健康管理</div>
+
+                <div class="pet-grid">
+                    <div class="pet-category">
+                        <span class="pet-emoji">🐕</span>
+                        <div class="pet-name">犬类</div>
+                        <div class="pet-desc">狗狗识别</div>
+                    </div>
+                    <div class="pet-category">
+                        <span class="pet-emoji">🐈</span>
+                        <div class="pet-name">猫类</div>
+                        <div class="pet-desc">猫咪识别</div>
+                    </div>
+                    <div class="pet-category">
+                        <span class="pet-emoji">🦜</span>
+                        <div class="pet-name">鸟类</div>
+                        <div class="pet-desc">鸟类识别</div>
+                    </div>
+                    <div class="pet-category">
+                        <span class="pet-emoji">🐢</span>
+                        <div class="pet-name">爬行类</div>
+                        <div class="pet-desc">龟蛇蜥蜴</div>
+                    </div>
+                    <div class="pet-category">
+                        <span class="pet-emoji">🐁</span>
+                        <div class="pet-name">啮齿类</div>
+                        <div class="pet-desc">仓鼠龙猫</div>
+                    </div>
+                    <div class="pet-category">
+                        <span class="pet-emoji">🐠</span>
+                        <div class="pet-name">水生动物</div>
+                        <div class="pet-desc">金鱼观赏鱼</div>
+                    </div>
+                </div>
+
+                <div class="right-features">
+                    <div class="feature-item">
+                        <span class="feature-icon">🤖</span>
+                        <span>AI 离线识别</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">💊</span>
+                        <span>健康咨询</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📊</span>
+                        <span>数据记录</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== 粒子动画背景 =====
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        class Particle {
+            constructor() {
+                this.reset();
+                this.y = Math.random() * canvas.height;
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.3;
+                this.speedY = (Math.random() - 0.5) * 0.3;
+                this.opacity = Math.random() * 0.4 + 0.1;
+                this.color = Math.random() > 0.5 ? '0, 229, 255' : '138, 43, 226';
+                this.pulse = Math.random() * Math.PI * 2;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.pulse += 0.015;
+                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+            }
+            draw() {
+                const glow = Math.sin(this.pulse) * 0.3 + 0.7;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${this.color}, ${this.opacity * glow})`;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = `rgba(${this.color}, 0.8)`;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        for (let i = 0; i < 60; i++) particles.push(new Particle());
+
+        function connectParticles() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 120) {
+                        const opacity = (1 - dist / 120) * 0.1;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(0, 229, 255, ${opacity})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            connectParticles();
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // ===== 表单交互 =====
+        let currentRole = 'user';
+
+        document.querySelectorAll('.role-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentRole = btn.dataset.role;
+
+                const adminHint = document.getElementById('adminHint');
+                const registerLink = document.getElementById('registerLink');
+
+                if (currentRole === 'admin') {
+                    registerLink.classList.add('hidden');
+                } else {
+                    registerLink.classList.remove('hidden');
+                }
+            });
+        });
+
+        // 表单交互 - 发光追踪
+        const formCard = document.querySelector('.form-card');
+        if (formCard) {
+            formCard.addEventListener('mousemove', (e) => {
+                const rect = formCard.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width) * 100;
+                const y = ((e.clientY - rect.top) / rect.height) * 100;
+                formCard.style.setProperty('--glow-x', x + '%');
+                formCard.style.setProperty('--glow-y', y + '%');
+            });
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const messageEl = document.getElementById('message');
+
+            messageEl.className = '';
+            messageEl.textContent = '';
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, role: currentRole })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    messageEl.className = 'success';
+                    messageEl.textContent = '✓ 登录成功，正在跳转...';
+                    setTimeout(() => {
+                        window.location.href = '/home';
+                    }, 500);
+                } else {
+                    messageEl.className = 'error';
+                    messageEl.textContent = '✗ ' + (data.message || '登录失败');
+                }
+            } catch (err) {
+                messageEl.className = 'error';
+                messageEl.textContent = '✗ 网络错误，请重试';
+            }
+        });
+
+        document.getElementById('guestBtn').addEventListener('click', async () => {
+            const messageEl = document.getElementById('message');
+            messageEl.className = '';
+            messageEl.textContent = '';
+
+            try {
+                const response = await fetch('/api/auth/guest', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    messageEl.className = 'success';
+                    messageEl.textContent = '✓ 已进入游客模式，正在跳转...';
+                    setTimeout(() => {
+                        window.location.href = '/home';
+                    }, 300);
+                } else {
+                    messageEl.className = 'error';
+                    messageEl.textContent = '✗ ' + (data.message || '进入游客模式失败');
+                }
+            } catch (err) {
+                messageEl.className = 'error';
+                messageEl.textContent = '✗ 网络错误';
+            }
+        });
+    </script>
+</body>
+</html>
