@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>宠物智能识别与情绪健康咨询系统</title>
+<link rel="stylesheet" href="/static/style.css?v=20261022b">
+</head>
+<body>
+<div class="bg-animation">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <canvas id="particleCanvas"></canvas>
+</div>
+<div class="grid-overlay"></div>
+
+<div class="app-container dual-nav-layout">
+  <!-- ========== 左侧边栏（次要功能） ========== -->
+  <aside class="side-nav-bar">
+    <div class="side-brand">
+      <div class="side-logo-ring">
+        <span>🐾</span>
+      </div>
+      <div class="side-brand-txt">
+        <div class="side-title">PET AI</div>
+        <div class="side-subtitle">EMOTION SYSTEM</div>
+      </div>
+    </div>
+
+    <div class="side-section-label">数据分析</div>
+    <div class="side-menu">
+      <a class="side-menu-item" data-page="dashboard">
+        <span class="sm-icon">📊</span><span class="sm-text">数据统计</span>
+      </a>
+      <a class="side-menu-item" data-page="stats">
+        <span class="sm-icon">📈</span><span class="sm-text">健康报告</span>
+      </a>
+      <a class="side-menu-item" data-page="alerts">
+        <span class="sm-icon">⚠️</span><span class="sm-text">健康预警</span>
+      </a>
+    </div>
+
+    <div class="side-section-label">智能服务</div>
+    <div class="side-menu">
+      <a class="side-menu-item" data-page="consult">
+        <span class="sm-icon">💬</span><span class="sm-text">常见问题咨询</span>
+      </a>
+      <a class="side-menu-item admin-only" data-page="users">
+        <span class="sm-icon">👥</span><span class="sm-text">用户管理</span>
+      </a>
+      <a class="side-menu-item" data-page="settings">
+        <span class="sm-icon">⚙️</span><span class="sm-text">系统设置</span>
+      </a>
+    </div>
+
+    <div class="side-section-label">快捷操作</div>
+    <div class="side-quick">
+      <button class="sq-btn" onclick="showPage('recognition')">
+        <span>📷</span><span>快速识别</span>
+      </button>
+      <button class="sq-btn admin-only" onclick="showPage('cloud_sync')">
+        <span>☁️</span><span>云端同步</span>
+      </button>
+      <button class="sq-btn" onclick="showHelpModal()">
+        <span>❓</span><span>使用帮助</span>
+      </button>
+      <button class="sq-btn" onclick="exportAllReports()">
+        <span>📤</span><span>批量导出</span>
+      </button>
+    </div>
+
+    <div class="side-section-label">健康提示</div>
+    <div class="side-health-tip" id="sideHealthTip">
+      <div class="sht-icon">🐾</div>
+      <div class="sht-body">
+        <div class="sht-title">健康贴士</div>
+        <div class="sht-text">定期为宠物进行体检，保障它们的健康状态。</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========== 主区域 ========== -->
+  <div class="dual-main">
+    <!-- 顶部横导航（主要功能） -->
+    <header class="top-navbar">
+      <div class="nav-brand-mini">
+        <span class="mini-icon">🐾</span>
+        <div class="mini-text">
+          <div class="mini-title">PetAI 宠物智能识别系统</div>
+        </div>
+      </div>
+
+      <nav class="top-nav-menu">
+        <a class="top-nav-item active" data-page="recognition">
+          <span>🔍</span><span>图像识别</span>
+          <span class="top-nav-badge">HOT</span>
+        </a>
+        <a class="top-nav-item no-guest" data-page="history">
+          <span>📋</span><span>历史记录</span>
+        </a>
+        <a class="top-nav-item" data-page="knowledge">
+          <span>📖</span><span>知识库</span>
+        </a>
+        <a class="top-nav-item" data-page="medicine">
+          <span>💊</span><span>药品信息参考</span>
+        </a>
+        <a class="top-nav-item" data-page="hospital">
+          <span>🏥</span><span>附近医院</span>
+        </a>
+        <a class="top-nav-item admin-only" data-page="cloud_sync">
+          <span>☁️</span><span>云端同步</span>
+        </a>
+      </nav>
+
+      <div class="nav-right">
+        <div class="status-chip" id="modelStatusBadge">
+          <span class="status-dot"></span>
+          <span id="modelStatusText">模型加载中</span>
+        </div>
+        <div class="user-chip" id="userChip" onclick="showUserMenu()">
+          <div class="user-avatar" id="userAvatar">U</div>
+          <div class="user-info-mini">
+            <div class="user-name-mini" id="userName">加载中</div>
+            <div class="user-role-mini" id="userRole">用户</div>
+          </div>
+          <span class="chip-arrow">▾</span>
+        </div>
+        <div class="user-dropdown" id="userDropdown" style="display:none">
+          <div class="dropdown-item" onclick="showProfile()">👤 个人资料</div>
+          <div class="dropdown-item" onclick="showPage('settings')">⚙️ 系统设置</div>
+          <div class="dropdown-item" onclick="showHelpModal()">❓ 使用帮助</div>
+          <div class="dropdown-item danger" onclick="logout()">⏻ 退出登录</div>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="content-header">
+        <div class="content-title-area">
+          <h1 class="content-title" id="pageTitle">数据统计</h1>
+          <div class="content-subtitle" id="pageSubtitle">系统数据统计总览</div>
+        </div>
+        <div class="content-actions" id="contentActions"></div>
+      </div>
+      <div class="content-area" id="contentArea"></div>
+    </main>
+
+    <!-- 底部状态栏 -->
+    <footer class="bottom-status-bar">
+      <div class="status-bar-left">
+        <span class="status-item"><span class="status-icon">🌡️</span><span id="weatherTemp">--</span>°C</span>
+        <span class="status-item"><span class="status-icon">💧</span><span id="weatherHumidity">--</span>%</span>
+        <span class="status-item"><span class="status-icon">🌤️</span><span id="weatherDesc">晴</span></span>
+      </div>
+      <div class="status-bar-center">
+        <span class="copyright">宠物智能识别与情绪健康咨询系统 v1.0 · 版权所有 · 保留权利 · 未经授权禁止转载或用于商业用途</span>
+      </div>
+      <div class="status-bar-right">
+        <span class="status-item"><span class="status-icon">🕐</span><span id="currentDate">--</span></span>
+        <span class="status-item"><span class="status-icon">⏰</span><span id="currentTime">--:--:--</span></span>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal sci-border">
+    <div class="corner-deco tl"></div>
+    <div class="corner-deco tr"></div>
+    <div class="corner-deco bl"></div>
+    <div class="corner-deco br"></div>
+    <div class="modal-header card-title-hud">
+      <div class="modal-title" id="modalTitle">标题</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer" id="modalFooter"></div>
+  </div>
+</div>
+
+<!-- 启动加载屏 (P3) -->
+<div id="bootLoader" style="position:fixed;inset:0;z-index:99999;background:radial-gradient(ellipse at center, #05132a 0%, #010810 60%, #000 100%);display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff;overflow:hidden">
+  <canvas id="bootParticles" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+  <div style="position:relative;z-index:2;text-align:center;width:640px;max-width:86vw">
+    <div style="margin-bottom:18px">
+      <div style="width:96px;height:96px;margin:0 auto 14px;border-radius:24px;background:linear-gradient(135deg, rgba(0,229,255,0.18), rgba(138,43,226,0.15));border:1px solid rgba(0,229,255,0.35);display:flex;align-items:center;justify-content:center;box-shadow:0 0 40px rgba(0,229,255,0.25), inset 0 0 30px rgba(0,229,255,0.1);position:relative">
+        <div style="position:absolute;inset:-2px;border-radius:24px;border:1px solid transparent;background:linear-gradient(135deg, #00E5FF, #8B5CF6, #00FF88) border-box;-webkit-mask:linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:bootSpin 6s linear infinite"></div>
+        <span style="font-size:42px;filter:drop-shadow(0 0 14px rgba(0,229,255,0.6));animation:bootFloat 3s ease-in-out infinite">🐾</span>
+      </div>
+      <div style="font-size:24px;font-weight:700;background:linear-gradient(135deg, #fff 0%, #00E5FF 50%, #8B5CF6 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:1px">宠物智能识别与情绪健康咨询系统</div>
+      <div style="font-size:11px;color:#38BDF8;letter-spacing:3px;margin-top:6px">PET AI EMOTION SYSTEM · LOADING</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(6, 1fr);gap:12px;margin:26px 0 28px" id="bootPetGrid">
+      <div style="padding:12px 8px;border-radius:12px;background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.15);animation:bootPet .7s 0s cubic-bezier(.16,1,.3,1) both"><div style="font-size:26px;filter:drop-shadow(0 0 8px rgba(0,229,255,0.5));margin-bottom:4px">🐕</div><div style="font-size:11px;color:#7DD3FC">犬类</div></div>
+      <div style="padding:12px 8px;border-radius:12px;background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.15);animation:bootPet .7s .06s cubic-bezier(.16,1,.3,1) both"><div style="font-size:26px;filter:drop-shadow(0 0 8px rgba(0,229,255,0.5));margin-bottom:4px">🐈</div><div style="font-size:11px;color:#7DD3FC">猫类</div></div>
+      <div style="padding:12px 8px;border-radius:12px;background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.15);animation:bootPet .7s .12s cubic-bezier(.16,1,.3,1) both"><div style="font-size:26px;filter:drop-shadow(0 0 8px rgba(0,229,255,0.5));margin-bottom:4px">🦜</div><div style="font-size:11px;color:#7DD3FC">鸟类</div></div>
+      <div style="padding:12px 8px;border-radius:12px;background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.15);animation:bootPet .7s .18s cubic-bezier(.16,1,.3,1) both"><div style="font-size:26px;filter:drop-shadow(0 0 8px rgba(0,229,255,0.5));margin-bottom:4px">🐢</div><div style="font-size:11px;color:#7DD3FC">爬行类</div></div>
+      <div style="padding:12px 8px;border-radius:12px;background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.15);animation:bootPet .7s .24s cubic-bezier(.16,1,.3,1) both"><div style="font-size:26px;filter:drop-shadow(0 0 8px rgba(0,229,255,0.5));margin-bottom:4px">🐟</div><div style="font-size:11px;color:#7DD3FC">鱼类</div></div>
+      <div style="padding:12px 8px;border-radius:12px;background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.15);animation:bootPet .7s .3s cubic-bezier(.16,1,.3,1) both"><div style="font-size:26px;filter:drop-shadow(0 0 8px rgba(0,229,255,0.5));margin-bottom:4px">🐹</div><div style="font-size:11px;color:#7DD3FC">仓鼠</div></div>
+      <div style="padding:12px 8px;border-radius:12px;background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.15);animation:bootPet .7s .36s cubic-bezier(.16,1,.3,1) both"><div style="font-size:26px;filter:drop-shadow(0 0 8px rgba(0,229,255,0.5));margin-bottom:4px">🪲</div><div style="font-size:11px;color:#7DD3FC">甲虫</div></div>
+      <div style="padding:12px 8px;border-radius:12px;background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.15);animation:bootPet .7s .42s cubic-bezier(.16,1,.3,1) both"><div style="font-size:26px;filter:drop-shadow(0 0 8px rgba(0,229,255,0.5));margin-bottom:4px">🐇</div><div style="font-size:11px;color:#7DD3FC">兔类</div></div>
+      <div style="padding:12px 8px;border-radius:12px;background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.15);animation:bootPet .7s .48s cubic-bezier(.16,1,.3,1) both"><div style="font-size:26px;filter:drop-shadow(0 0 8px rgba(0,229,255,0.5));margin-bottom:4px">🦎</div><div style="font-size:11px;color:#7DD3FC">蜥蜴</div></div>
+      <div style="padding:12px 8px;border-radius:12px;background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.15);animation:bootPet .7s .54s cubic-bezier(.16,1,.3,1) both"><div style="font-size:26px;filter:drop-shadow(0 0 8px rgba(0,229,255,0.5));margin-bottom:4px">🐸</div><div style="font-size:11px;color:#7DD3FC">蛙类</div></div>
+      <div style="padding:12px 8px;border-radius:12px;background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.15);animation:bootPet .7s .6s cubic-bezier(.16,1,.3,1) both"><div style="font-size:26px;filter:drop-shadow(0 0 8px rgba(0,229,255,0.5));margin-bottom:4px">🦜</div><div style="font-size:11px;color:#7DD3FC">鹦鹉</div></div>
+      <div style="padding:12px 8px;border-radius:12px;background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.15);animation:bootPet .7s .66s cubic-bezier(.16,1,.3,1) both"><div style="font-size:26px;filter:drop-shadow(0 0 8px rgba(0,229,255,0.5));margin-bottom:4px">🐢</div><div style="font-size:11px;color:#7DD3FC">龟类</div></div>
+    </div>
+    <div style="text-align:left;margin-bottom:10px;display:flex;justify-content:space-between;font-size:12px;color:#7DD3FC">
+      <span id="bootStage">正在初始化引擎...</span>
+      <span id="bootPct" style="color:#00E5FF;font-weight:600">0%</span>
+    </div>
+    <div style="height:8px;border-radius:8px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.15);overflow:hidden;position:relative">
+      <div id="bootFill" style="height:100%;width:0%;background:linear-gradient(90deg, #00E5FF, #00FF88, #8B5CF6);border-radius:8px;box-shadow:0 0 16px rgba(0,229,255,0.5);position:relative;overflow:hidden">
+        <div style="position:absolute;inset:0;background:linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);animation:bootSweep 1.2s linear infinite"></div>
+      </div>
+    </div>
+    <div style="margin-top:20px;display:flex;justify-content:space-between;font-size:11px;color:#38BDF8">
+      <span>模型版本 · MobileNetV3-small</span>
+      <span id="bootSub">就绪数据: 0 条</span>
+      <span>v1.0.0 Release</span>
+    </div>
+  </div>
+  <style>
+    @keyframes bootSpin { to { transform: rotate(360deg); } }
+    @keyframes bootFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+    @keyframes bootSweep { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+    @keyframes bootPet { from{opacity:0;transform:translateY(12px) scale(.92)} to{opacity:1;transform:none} }
+  </style>
+</div>
+<script>
+(function(){
+  // 粒子背景
+  try {
+    const c = document.getElementById('bootParticles');
+    if (c) {
+      const ctx = c.getContext('2d');
+      function resize(){ c.width=c.clientWidth; c.height=c.clientHeight; }
+      resize(); window.addEventListener('resize', resize);
+      const ps = [];
+      for (let i=0;i<90;i++) ps.push({x:Math.random()*c.width,y:Math.random()*c.height,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,r:Math.random()*1.6+.4,o:Math.random()*.5+.15,col:Math.random()>.5?'0,229,255':'139,92,246'});
+      function drawPs(){
+        ctx.clearRect(0,0,c.width,c.height);
+        ps.forEach(p=>{
+          p.x+=p.vx; p.y+=p.vy;
+          if(p.x<0||p.x>c.width)p.vx*=-1;
+          if(p.y<0||p.y>c.height)p.vy*=-1;
+          ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+          ctx.fillStyle=`rgba(${p.col},${p.o})`; ctx.shadowBlur=8; ctx.shadowColor=`rgba(${p.col},0.8)`;
+          ctx.fill(); ctx.shadowBlur=0;
+        });
+        for (let i=0;i<ps.length;i++) for (let j=i+1;j<ps.length;j++){
+          const dx=ps[i].x-ps[j].x, dy=ps[i].y-ps[j].y, d=Math.sqrt(dx*dx+dy*dy);
+          if(d<110){ ctx.beginPath(); ctx.moveTo(ps[i].x,ps[i].y); ctx.lineTo(ps[j].x,ps[j].y); ctx.strokeStyle=`rgba(0,229,255,${(1-d/110)*.12})`; ctx.lineWidth=.5; ctx.stroke(); }
+        }
+        requestAnimationFrame(drawPs);
+      }
+      drawPs();
+    }
+  } catch(e){}
+  // 进度动画
+  const stages = [
+    '正在校验系统环境...',
+    '正在加载 AI 识别模型权重...',
+    '正在初始化图像预处理引擎...',
+    '正在挂载知识库（80+ 真实品种）...',
+    '正在建立数据库连接池...',
+    '正在启动健康预警中心...',
+    '正在初始化侧边导航与界面...',
+    '系统即将就绪，欢迎使用！'
+  ];
+  let pct=0, stage=0;
+  const pctEl=document.getElementById('bootPct'), fillEl=document.getElementById('bootFill'), stageEl=document.getElementById('bootStage'), subEl=document.getElementById('bootSub'), ov=document.getElementById('bootLoader');
+  const t = setInterval(()=>{
+    pct = Math.min(100, pct + Math.random()*12 + 3);
+    if (pctEl) pctEl.textContent = Math.round(pct) + '%';
+    if (fillEl) fillEl.style.width = pct + '%';
+    if (subEl) subEl.textContent = '就绪数据: ' + Math.round(pct*9) + ' 条';
+    const ns = Math.min(stages.length-1, Math.floor(pct / (100/stages.length)));
+    if (ns !== stage && stageEl) { stage = ns; stageEl.textContent = stages[stage]; }
+    if (pct >= 99.5) {
+      clearInterval(t);
+      if (pctEl) pctEl.textContent = '100%';
+      if (fillEl) fillEl.style.width = '100%';
+      if (stageEl) stageEl.textContent = '✓ 系统启动完成';
+      setTimeout(()=>{ if (ov) ov.style.transition='opacity .6s, transform .6s'; ov.style.opacity='0'; ov.style.transform='scale(1.04)'; setTimeout(()=>{ if (ov) ov.remove(); }, 700); }, 380);
+    }
+  }, 180);
+})();
+</script>
+
+<script src="/static/app.js?v=20261022b"></script>
+</body>
+</html>
