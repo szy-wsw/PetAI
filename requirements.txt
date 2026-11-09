@@ -1,0 +1,18 @@
+# 桌面宠物 AI 识别系统 —— Python 依赖清单
+# 安装：pip install -r requirements.txt
+
+# 网页端后端服务（Flask 框架、HTTP 请求）
+flask>=2.3
+requests>=2.31
+
+# AI 推理（MobileNetV3-small 预训练模型，CPU 可运行）
+torch>=1.13
+torchvision>=0.14
+
+# 图像处理（读取、缩放、预处理、绘制识别结果）
+opencv-python>=4.8
+numpy>=1.24
+pillow>=9.5
+
+# 桌面端 UI（Flutter 渲染）
+flet==0.86.4

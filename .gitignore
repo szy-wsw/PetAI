@@ -1,0 +1,49 @@
+# ========== Python 编译与缓存 ==========
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+
+# ========== 敏感配置（含密钥，禁止上传） ==========
+.env
+.env.supabase
+db/local_config.json
+config/host_id.json
+
+# ========== 运行期数据（不入库，克隆后自动生成） ==========
+# SQLite 数据库及备份
+data/*.db
+db/*.db
+db/*.bak*
+*.db-journal
+*.db-wal
+*.db-shm
+
+# 日志
+logs/
+*.log
+
+# 临时图片与用户缓存
+temp_img/
+user_cache/
+
+# 打包产物
+build_output/
+build/
+dist/
+
+# ========== 模型权重（体积大，按需本地放置） ==========
+model_weight/*.pth
+model_weight/*.pt
+model_weight/*.onnx
+
+# ========== 开发期调试输出 ==========
+*_out*.txt
+debug_*.txt
+
+# ========== 系统与编辑器 ==========
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
